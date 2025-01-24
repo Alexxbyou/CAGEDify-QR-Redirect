@@ -16,9 +16,8 @@
             text-align: center;
         }
         .app-icon {
-            max-width: 100%;
-            height: auto;
-            width: 300px; /* Adjust to desired size */
+            width: 150px;
+            height: 150px;
         }
         .title {
             font-size: 32px;
@@ -28,7 +27,6 @@
     </style>
     <script>
         function redirect() {
-            // Example encrypted parameter in the QR code
             const params = new URLSearchParams(window.location.search);
             const encryptedData = params.get('data');  // Encrypted parameters
 
@@ -42,21 +40,28 @@
 
             // Detect the device type
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            let appLaunched = false;
+
+            function handleFallback() {
+                if (!appLaunched) {
+                    window.location.href = "https://cagedify.com"; // Fallback website
+                }
+            }
 
             if (/android/i.test(userAgent)) {
                 window.location.href = androidAppScheme;
-                setTimeout(() => { window.location.href = androidStoreUrl; }, 2500);
+                appLaunched = true;
             } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
                 window.location.href = iosAppScheme;
-                setTimeout(() => { window.location.href = iosStoreUrl; }, 2500);
-            } else {
-                window.location.href = "https://cagedify.com"; // Fallback website
+                appLaunched = true;
             }
+
+            setTimeout(handleFallback, 2500);
         }
     </script>
 </head>
 <body onload="redirect()">
-    <img src="Appicon.png" alt="CAGEDify App Icon" class="app-icon">
+    <img src="src/Appicon.png" alt="CAGEDify App Icon" class="app-icon">
     <div class="title">CAGEDify</div>
     <p>Redirecting...</p>
 </body>
