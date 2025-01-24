@@ -40,23 +40,33 @@
 
             // Detect the device type
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            let appLaunched = false;
+            let appOpened = false;
 
-            function handleFallback() {
-                if (!appLaunched) {
-                    window.location.href = "https://cagedify.com"; // Fallback website
+            function checkAppOpened() {
+                if (!document.hidden) {
+                    appOpened = true;
                 }
             }
 
+            document.addEventListener("visibilitychange", checkAppOpened);
+
             if (/android/i.test(userAgent)) {
                 window.location.href = androidAppScheme;
-                appLaunched = true;
+                setTimeout(() => {
+                    if (!appOpened) {
+                        window.location.href = androidStoreUrl;
+                    }
+                }, 2500);
             } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
                 window.location.href = iosAppScheme;
-                appLaunched = true;
+                setTimeout(() => {
+                    if (!appOpened) {
+                        window.location.href = iosStoreUrl;
+                    }
+                }, 2500);
+            } else {
+                window.location.href = "https://cagedify.com"; // Fallback website
             }
-
-            setTimeout(handleFallback, 2500);
         }
     </script>
 </head>
