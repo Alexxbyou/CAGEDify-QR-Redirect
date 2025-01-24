@@ -36,34 +36,32 @@
             
             const iosStoreUrl = "https://apps.apple.com/sg/app/cagedify/id6739692469";
             const androidStoreUrl = "https://play.google.com/store/apps/details?id=com.yourpackage.name";
-
+            
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            
+            function openApp(url) {
+                window.location.href = url;
+                setTimeout(() => {
+                    document.getElementById('launch-dialog').style.display = 'block';
+                }, 1000);
+            }
 
-            function checkAndRedirect(appScheme, storeUrl) {
-                let opened = false;
-                
-                const timeout = setTimeout(() => {
-                    if (!opened) {
-                        window.location.href = storeUrl;
-                    }
+            function checkAppInstalled(url, fallbackUrl) {
+                const hiddenIframe = document.createElement('iframe');
+                hiddenIframe.style.display = 'none';
+                document.body.appendChild(hiddenIframe);
+                hiddenIframe.src = url;
+
+                setTimeout(() => {
+                    document.body.removeChild(hiddenIframe);
+                    window.location.href = fallbackUrl;
                 }, 2000);
-
-                const iframe = document.createElement("iframe");
-                iframe.style.display = "none";
-                iframe.src = appScheme;
-                document.body.appendChild(iframe);
-
-                iframe.onload = function() {
-                    opened = true;
-                    clearTimeout(timeout);
-                    document.body.removeChild(iframe);
-                };
             }
 
             if (/android/i.test(userAgent)) {
-                checkAndRedirect(androidAppScheme, androidStoreUrl);
+                checkAppInstalled(androidAppScheme, androidStoreUrl);
             } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-                checkAndRedirect(iosAppScheme, iosStoreUrl);
+                checkAppInstalled(iosAppScheme, iosStoreUrl);
             } else {
                 window.location.href = "https://cagedify.com"; // Fallback website
             }
@@ -74,5 +72,9 @@
     <img src="Appicon.png" alt="CAGEDify App Icon" class="app-icon">
     <div class="title">CAGEDify</div>
     <p>Redirecting...</p>
+    <div id="launch-dialog" style="display:none;">
+        <p>Launching CAGEDify...</p>
+        <p>If nothing happens, <a href="https://apps.apple.com/sg/app/cagedify/id6739692469" target="_blank">click here</a> to install.</p>
+    </div>
 </body>
 </html>
