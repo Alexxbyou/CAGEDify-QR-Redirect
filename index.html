@@ -13,22 +13,38 @@
             // Your app's deep link scheme
             const iosAppScheme = `cagedify://open?data=${encryptedData}`;
             const androidAppScheme = `intent://open#Intent;scheme=cagedify;package=com.yourpackage.name;S.data=${encryptedData};end;`;
-            
+
             // Store URLs
             const iosStoreUrl = "https://apps.apple.com/sg/app/cagedify/id6739692469";
             const androidStoreUrl = "https://play.google.com/store/apps/details?id=com.yourpackage.name";
 
             // Detect the device type
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isAndroid = /android/i.test(userAgent);
+            const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
 
-            if (/android/i.test(userAgent)) {
-                window.location.href = androidAppScheme;
-                setTimeout(() => { window.location.href = androidStoreUrl; }, 2500);
-            } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-                window.location.href = iosAppScheme;
-                setTimeout(() => { window.location.href = iosStoreUrl; }, 2500);
+            let appUrl = isAndroid ? androidAppScheme : isIOS ? iosAppScheme : null;
+            let storeUrl = isAndroid ? androidStoreUrl : isIOS ? iosStoreUrl : "https://cagedify.com"; // Fallback website
+
+            if (appUrl) {
+                // Try opening the app via an iframe to avoid visible redirects
+                const startTime = Date.now();
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+                iframe.src = appUrl;
+
+                // Set a timeout to detect if the app is not installed
+                setTimeout(() => {
+                    const elapsedTime = Date.now() - startTime;
+                    if (elapsedTime < 2000) { 
+                        // If the app wasn't opened, redirect to the store
+                        window.location.href = storeUrl;
+                    }
+                }, 1500);
             } else {
-                window.location.href = "https://cagedify.com"; // Fallback website
+                // If the platform isn't Android or iOS, redirect to the fallback page
+                window.location.href = "https://cagedify.com";
             }
         }
     </script>
