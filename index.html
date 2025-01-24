@@ -16,8 +16,8 @@
             text-align: center;
         }
         .app-icon {
-            width: 150px;
-            height: 150px;
+            width: 300px;
+            height: auto;
         }
         .title {
             font-size: 32px;
@@ -30,42 +30,43 @@
             const params = new URLSearchParams(window.location.search);
             const encryptedData = params.get('data');  // Encrypted parameters
 
-            // Your app's deep link scheme
             const iosAppScheme = `cagedify://open?data=${encryptedData}`;
             const androidAppScheme = `intent://open#Intent;scheme=cagedify;package=com.yourpackage.name;S.data=${encryptedData};end;`;
             
-            // Store URLs
             const iosStoreUrl = "https://apps.apple.com/sg/app/cagedify/id6739692469";
             const androidStoreUrl = "https://play.google.com/store/apps/details?id=com.yourpackage.name";
 
-            // Detect the device type
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            let appOpened = false;
-
-            function checkAppOpened() {
-                if (!document.hidden) {
-                    appOpened = true;
-                }
-            }
-
-            document.addEventListener("visibilitychange", checkAppOpened);
+            let appScheme;
+            let storeUrl;
 
             if (/android/i.test(userAgent)) {
-                window.location.href = androidAppScheme;
-                setTimeout(() => {
-                    if (!appOpened) {
-                        window.location.href = androidStoreUrl;
-                    }
-                }, 2500);
+                appScheme = androidAppScheme;
+                storeUrl = androidStoreUrl;
             } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-                window.location.href = iosAppScheme;
-                setTimeout(() => {
-                    if (!appOpened) {
-                        window.location.href = iosStoreUrl;
-                    }
-                }, 2500);
+                appScheme = iosAppScheme;
+                storeUrl = iosStoreUrl;
             } else {
-                window.location.href = "https://cagedify.com"; // Fallback website
+                window.location.href = "https://cagedify.com";  // Fallback website
+                return;
+            }
+
+            // Check if the app is installed by attempting to open the URL
+            const checkAppInstalled = setTimeout(() => {
+                window.location.href = storeUrl; // Redirect to store if app is not installed
+            }, 2500);
+
+            window.location.href = appScheme;
+
+            window.addEventListener('blur', () => {
+                clearTimeout(checkAppInstalled);
+                showDialog(appScheme);
+            });
+        }
+
+        function showDialog(appScheme) {
+            if (confirm("CAGEDify is installed. Do you want to open it?")) {
+                window.location.href = appScheme;
             }
         }
     </script>
