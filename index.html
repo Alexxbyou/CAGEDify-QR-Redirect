@@ -36,34 +36,38 @@
             
             const iosStoreUrl = "https://apps.apple.com/sg/app/cagedify/id6739692469";
             const androidStoreUrl = "https://play.google.com/store/apps/details?id=com.yourpackage.name";
-            
+
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            
-            function openApp(url) {
-                window.location.href = url;
-                setTimeout(() => {
-                    document.getElementById('launch-dialog').style.display = 'block';
-                }, 1000);
-            }
-
-            function checkAppInstalled(url, fallbackUrl) {
-                const hiddenIframe = document.createElement('iframe');
-                hiddenIframe.style.display = 'none';
-                document.body.appendChild(hiddenIframe);
-                hiddenIframe.src = url;
-
-                setTimeout(() => {
-                    document.body.removeChild(hiddenIframe);
-                    window.location.href = fallbackUrl;
-                }, 2000);
-            }
+            let appScheme;
+            let storeUrl;
 
             if (/android/i.test(userAgent)) {
-                checkAppInstalled(androidAppScheme, androidStoreUrl);
+                appScheme = androidAppScheme;
+                storeUrl = androidStoreUrl;
             } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-                checkAppInstalled(iosAppScheme, iosStoreUrl);
+                appScheme = iosAppScheme;
+                storeUrl = iosStoreUrl;
             } else {
-                window.location.href = "https://cagedify.com"; // Fallback website
+                window.location.href = "https://cagedify.com";  // Fallback website
+                return;
+            }
+
+            // Check if the app is installed by attempting to open the URL
+            const checkAppInstalled = setTimeout(() => {
+                window.location.href = storeUrl; // Redirect to store if app is not installed
+            }, 2500);
+
+            window.location.href = appScheme;
+
+            window.addEventListener('blur', () => {
+                clearTimeout(checkAppInstalled);
+                showDialog(appScheme);
+            });
+        }
+
+        function showDialog(appScheme) {
+            if (confirm("CAGEDify is installed. Do you want to open it?")) {
+                window.location.href = appScheme;
             }
         }
     </script>
@@ -72,9 +76,5 @@
     <img src="Appicon.png" alt="CAGEDify App Icon" class="app-icon">
     <div class="title">CAGEDify</div>
     <p>Redirecting...</p>
-    <div id="launch-dialog" style="display:none;">
-        <p>Launching CAGEDify...</p>
-        <p>If nothing happens, <a href="https://apps.apple.com/sg/app/cagedify/id6739692469" target="_blank">click here</a> to install.</p>
-    </div>
 </body>
 </html>
