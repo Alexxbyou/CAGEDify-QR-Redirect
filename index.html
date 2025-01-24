@@ -38,36 +38,34 @@
             const androidStoreUrl = "https://play.google.com/store/apps/details?id=com.yourpackage.name";
 
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            let appScheme;
-            let storeUrl;
 
-            if (/android/i.test(userAgent)) {
-                appScheme = androidAppScheme;
-                storeUrl = androidStoreUrl;
-            } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-                appScheme = iosAppScheme;
-                storeUrl = iosStoreUrl;
-            } else {
-                window.location.href = "https://cagedify.com";  // Fallback website
-                return;
+            function checkAndRedirect(appScheme, storeUrl) {
+                let opened = false;
+                
+                const timeout = setTimeout(() => {
+                    if (!opened) {
+                        window.location.href = storeUrl;
+                    }
+                }, 2000);
+
+                const iframe = document.createElement("iframe");
+                iframe.style.display = "none";
+                iframe.src = appScheme;
+                document.body.appendChild(iframe);
+
+                iframe.onload = function() {
+                    opened = true;
+                    clearTimeout(timeout);
+                    document.body.removeChild(iframe);
+                };
             }
 
-            // Check if the app is installed by attempting to open the URL
-            const checkAppInstalled = setTimeout(() => {
-                window.location.href = storeUrl; // Redirect to store if app is not installed
-            }, 2500);
-
-            window.location.href = appScheme;
-
-            window.addEventListener('blur', () => {
-                clearTimeout(checkAppInstalled);
-                showDialog(appScheme);
-            });
-        }
-
-        function showDialog(appScheme) {
-            if (confirm("CAGEDify is installed. Do you want to open it?")) {
-                window.location.href = appScheme;
+            if (/android/i.test(userAgent)) {
+                checkAndRedirect(androidAppScheme, androidStoreUrl);
+            } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                checkAndRedirect(iosAppScheme, iosStoreUrl);
+            } else {
+                window.location.href = "https://cagedify.com"; // Fallback website
             }
         }
     </script>
