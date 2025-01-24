@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAGEDify Redirect</title>
+    <script>
+        function redirect() {
+            // Example encrypted parameter in the QR code
+            const params = new URLSearchParams(window.location.search);
+            const encryptedData = params.get('data');  // Encrypted parameters
+
+            // Your app's deep link scheme
+            const iosAppScheme = `cagedify://open?data=${encryptedData}`;
+            const androidAppScheme = `intent://open#Intent;scheme=cagedify;package=com.yourpackage.name;S.data=${encryptedData};end;`;
+            
+            // Store URLs
+            const iosStoreUrl = "https://apps.apple.com/sg/app/cagedify/id6739692469";
+            const androidStoreUrl = "https://play.google.com/store/apps/details?id=com.yourpackage.name";
+
+            // Detect the device type
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+            if (/android/i.test(userAgent)) {
+                window.location.href = androidAppScheme;
+                setTimeout(() => { window.location.href = androidStoreUrl; }, 2500);
+            } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                window.location.href = iosAppScheme;
+                setTimeout(() => { window.location.href = iosStoreUrl; }, 2500);
+            } else {
+                window.location.href = "https://cagedify.com"; // Fallback website
+            }
+        }
+    </script>
+</head>
+<body onload="redirect()">
+    <p>Redirecting...</p>
+</body>
+</html>
